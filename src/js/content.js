@@ -464,6 +464,7 @@ const allData = [
   [`Remember, contributions to this repository should follow our GitHub`, `请记住，对本仓库的贡献应遵循我们的 GitHub`],
   [`Open a pull request to contribute your changes upstream.`, `发起一个拉取请求，将您的更改贡献到上游。`],
   [`Open pull request`, `发起拉取请求`],
+  [`Contribute`, `贡献`],
   [`I want to delete this repository`, `我想删除这个仓库`],
   [`Unexpected bad things will happen if you don’t read this!`, `如果不读这个，会发生意想不到的糟糕事情！`],
 
