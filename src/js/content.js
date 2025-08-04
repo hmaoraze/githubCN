@@ -452,10 +452,20 @@ const allData = [
     `屏蔽用户，防止用户与您的仓库互动并发送您通知。了解更多信息`
   ],
   [`Report abuse`, `举报滥用`],
-  [`Galaxy Brain`, ``],
+  [`This will permanently delete the`, `这将永久删除`],
+  [`repository, wiki, issues, comments, packages, secrets, workflow runs, and remove all collaborator associations.`, `仓库、维基、议题、评论、包、密钥、工作流运行，并移除所有协作者关联。`],
+  [`To confirm, type`, `为确认，请输入`],
+  [`in the box below`, `在下方的框中`],
+  [`Allow edits by maintainers`, `允许维护者进行编辑`],
+  [`Create pull request`, `创建拉取请求`],
+  [`Open a pull request that is ready for review`, `打开一个可供审核的拉取请求`],
+  [`Create draft pull request`, `创建草稿拉取请求`],
+  [`Cannot be merged until marked ready for review`, `在标记为可供审核之前，无法合并`],
+  [`Remember, contributions to this repository should follow our GitHub`, `请记住，对本仓库的贡献应遵循我们的 GitHub`],
   [`Open a pull request to contribute your changes upstream.`, `发起一个拉取请求，将您的更改贡献到上游。`],
   [`Open pull request`, `发起拉取请求`],
-  [``, ``],
+  [`I want to delete this repository`, `我想删除这个仓库`],
+  [`Unexpected bad things will happen if you don’t read this!`, `如果不读这个，会发生意想不到的糟糕事情！`],
 
   
 ];
