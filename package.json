@@ -1,13 +1,15 @@
 {
   "name": "github_cn",
-  "version": "1.4.0",
-  "description": "Github 浏览器汉化扩展",
+  "version": "1.5.0",
+  "description": "GitHub 中文化浏览器扩展 - 让 GitHub 更好用",
   "scripts": {
-    "publish": "node app.js"
+    "publish": "node app.js",
+    "build": "node app.js",
+    "dev": "node --watch app.js"
   },
-  "keywords": [],
+  "keywords": ["github", "chinese", "translation", "extension", "browser"],
   "author": "JQiue",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@plasmo-corp/ewu": "^0.6.0"
   },
@@ -15,5 +17,13 @@
   "dependencies": {
     "compressing": "^1.6.2",
     "dotenv": "^16.0.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JQiue/githubCN"
+  },
+  "bugs": {
+    "url": "https://github.com/JQiue/githubCN/issues"
+  },
+  "homepage": "https://github.com/JQiue/githubCN#readme"
 }

@@ -1,4 +1,4 @@
-const allData = [
+const translationMap = new Map([
   [`Recent Repositories`, `最近仓库`],
   [`Search or jump to…`, `搜索并跳转至...`],
   [`Issues`, `问题`],
@@ -467,71 +467,135 @@ const allData = [
   [`Contribute`, `贡献`],
   [`I want to delete this repository`, `我想删除这个仓库`],
   [`Unexpected bad things will happen if you don’t read this!`, `如果不读这个，会发生意想不到的糟糕事情！`],
+]);
 
-  
-];
-
-const MutationObserverConfig = {
-  childList: true,
-  subtree: true,
-  attributeFilter: ["data-label"],
-  characterData: true,
+const CONFIG = {
+  debounceDelay: 100,
+  maxRetries: 3,
+  retryDelay: 500
 };
 
-const observer = new MutationObserver(function (mutations) {
-  const treeWalker = document.createTreeWalker(
-    document.body,
-    NodeFilter.SHOW_ALL,
-    {
-      acceptNode: function (node) {
-        if (
-          node.nodeType === 3 ||
-          (node.hasAttribute &&
-            (node.hasAttribute("data-label") ||
-              node.hasAttribute("placeholder") ||
-              node.hasAttribute("value")))
-        ) {
-          return NodeFilter.FILTER_ACCEPT;
-        } else {
-          return NodeFilter.FILTER_SKIP;
-        }
-      },
-    },
-    false
-  );
-  let dataMap = new Map();
-  allData.forEach(([key, val]) => {
-    if (key && !dataMap.has(key)) {
-      dataMap.set(key, val);
+let isProcessing = false;
+let pendingMutations = [];
+let retryCount = 0;
+
+const debounce = (func, delay) => {
+  let timeoutId;
+  return function (...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func.apply(this, args), delay);
+  };
+};
+
+const normalizeText = (text) => {
+  return text
+    ?.replace(/^\s+|\s+$/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+const translateTextNode = (node) => {
+  const originalText = normalizeText(node.textContent);
+  if (originalText && translationMap.has(originalText)) {
+    node.textContent = translationMap.get(originalText);
+  }
+};
+
+const translateElement = (element) => {
+  const attributes = ['data-label', 'placeholder', 'value', 'data-signin-label', 'data-disable-with'];
+  
+  attributes.forEach(attr => {
+    if (element.hasAttribute && element.hasAttribute(attr)) {
+      const originalValue = normalizeText(element.getAttribute(attr));
+      if (originalValue && translationMap.has(originalValue)) {
+        element.setAttribute(attr, translationMap.get(originalValue));
+      }
     }
   });
-  let currentNode = treeWalker.currentNode;
-  while (currentNode) {
-    if (currentNode.nodeType === 3) {
-      let key1 = currentNode.textContent
-        .replace(/^\s*|\s*$/g, "")
-        .replace(/\s+/g, " ");
-      if (dataMap.has(key1)) currentNode.textContent = dataMap.get(key1);
-    } else {
-      let key2 = currentNode.getAttribute("data-label");
-      if (key2 && dataMap.has(key2))
-        currentNode.setAttribute("data-label", dataMap.get(key2));
-      let key3 = currentNode.getAttribute("placeholder") || "";
-      if ((key3 = key3.trim())) {
-        if (dataMap.has(key3))
-          currentNode.setAttribute("placeholder", dataMap.get(key3));
+};
+
+const processTranslations = () => {
+  if (isProcessing) return;
+  
+  isProcessing = true;
+  
+  try {
+    const walker = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
+      {
+        acceptNode: (node) => {
+          if (node.nodeType === Node.TEXT_NODE) {
+            return NodeFilter.FILTER_ACCEPT;
+          }
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node;
+            if (element.hasAttribute && (
+              element.hasAttribute('data-label') ||
+              element.hasAttribute('placeholder') ||
+              element.hasAttribute('value') ||
+              element.hasAttribute('data-signin-label') ||
+              element.hasAttribute('data-disable-with')
+            )) {
+              return NodeFilter.FILTER_ACCEPT;
+            }
+          }
+          return NodeFilter.FILTER_SKIP;
+        }
       }
-      let key4 = currentNode.getAttribute("value");
-      if (currentNode.tagName == "INPUT" && dataMap.has(key4)) {
-        currentNode.setAttribute("value", dataMap.get(key4));
-        let key5 = currentNode.getAttribute("data-signin-label");
-        let key6 = currentNode.getAttribute("data-disable-with");
-        currentNode.setAttribute("data-signin-label", dataMap.get(key5));
-        currentNode.setAttribute("data-disable-with", dataMap.get(key6));
+    );
+
+    let node;
+    while (node = walker.nextNode()) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        translateTextNode(node);
+      } else {
+        translateElement(node);
       }
     }
-    currentNode = treeWalker.nextNode();
+    
+    retryCount = 0;
+  } catch (error) {
+    console.warn('Translation error:', error);
+    if (retryCount < CONFIG.maxRetries) {
+      retryCount++;
+      setTimeout(processTranslations, CONFIG.retryDelay);
+    }
+  } finally {
+    isProcessing = false;
+  }
+};
+
+const debouncedProcessTranslations = debounce(processTranslations, CONFIG.debounceDelay);
+
+const observer = new MutationObserver((mutations) => {
+  const hasRelevantChanges = mutations.some(mutation => 
+    mutation.type === 'childList' && mutation.addedNodes.length > 0 ||
+    mutation.type === 'characterData'
+  );
+  
+  if (hasRelevantChanges) {
+    debouncedProcessTranslations();
   }
 });
 
-observer.observe(document.body, MutationObserverConfig);
+const initObserver = () => {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startTranslation);
+  } else {
+    startTranslation();
+  }
+};
+
+const startTranslation = () => {
+  processTranslations();
+  
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+    attributeFilter: ['data-label', 'placeholder', 'value', 'data-signin-label', 'data-disable-with']
+  });
+};
+
+initObserver();

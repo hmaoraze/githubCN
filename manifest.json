@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "GithubCN",
   "short_name": "GithubCN",
-  "description": "Github 汉化插件",
-  "version": "1.4",
+  "description": "GitHub 中文化插件 - 让 GitHub 更好用",
+  "version": "1.5.0",
   "homepage_url": "https://github.com/JQiue/githubCN",
   "icons": {
     "16": "src/img/icon-16.png",
@@ -15,10 +15,17 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://github.com/*"],
+      "matches": ["https://github.com/*", "https://*.github.com/*"],
       "js": ["src/js/content.js"],
       "run_at": "document_end",
       "all_frames": true
     }
+  ],
+  "permissions": [
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://github.com/*",
+    "https://*.github.com/*"
   ]
 }
